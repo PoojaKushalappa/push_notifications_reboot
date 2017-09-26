@@ -1,0 +1,101 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+# Push Notification
+
+Push Notification API is RESTful service which connects company's internal services to push information to registered user devices. 
+The information maybe a broadcast or a specific notification for a user.
+
+## Pushing Notifications to specific users [/notify]
+ 
+Allows pushing notifications to specified users with customized messages to each user. 
+This endpoint can be used to send a single message or a batch.
+
+### Custom Notification [POST]
+All notifications to be sent must be added into `requests` array, where-in each message is a json object containing the below fields
+
+| field_id        | attribute       | description                                                       |
+|-----------------|-----------------|-------------------------------------------------------------------|
+| user_id         | string          | ID of user on whose's device this notification needs to be pushed |
+| title           | string          | Text to be displayed on notification                              |
+| notification_id | string          | Unique ID for this notification                                   |
+| expiry          | long, timestamp | Expiry of this message in UTC timestamp                           |
+| intent          | string          | Type of the notification                                          |
+
++ Request (application/json)
+
+        {
+            "requests": [
+                {
+                    "user_id": "eshwar@abc.com", 
+                    "notification_id": "1234",
+                    "title": "Here's something to pep you up for your morning commute",
+                    "expiry": "2017-09-31T13:53:22Z", 
+                    "intent": "proactive_morning_commute", 
+                },
+                {
+                    "user_id": "pooja@abc.com", 
+                    "message": {
+                        "notification_id": "1235",
+                        "title": "Rihanna's new album is out. Check it out",
+                        "expiry": "2017-09-31T13:53:22Z", 
+                        "intent": "new_album_for_artist", 
+                    }
+                },
+            ]
+        }
+        
++ Response 200 (application/json)
+
+        [
+            {
+                "question": "Favourite programming language?",
+                "published_at": "2015-08-05T08:40:51.620Z",
+                "choices": [
+                    {
+                        "choice": "Swift",
+                        "votes": 2048
+                    }, {
+                        "choice": "Python",
+                        "votes": 1024
+                    }, {
+                        "choice": "Objective-C",
+                        "votes": 512
+                    }, {
+                        "choice": "Ruby",
+                        "votes": 256
+                    }
+                ]
+            }
+        ]
+
+## Broadcasting to all or specific users [/broadcast]
+ 
+Allows pushing notifications to all or a group of users about a certain event/state.
+A common usecase for broadcast is notifying users about server downtime or some unforeseen issues at server side
+
+### Common Notification [POST]
+
+| field_id        | attribute       | description                                                       |
+|-----------------|-----------------|-------------------------------------------------------------------|
+| send_to_all     | boolean         | If true, the broadcast is sent to all registered users, else to select few mentioned in `users` field |
+| message         | string          | Text to be displayed on notification                              |
+| notification_id | string          | Unique ID for this notification                                   |
+| expiry          | long, timestamp | Expiry of this message in UTC timestamp                           |
+| users           | array           | List of user ids to whom the notification needs to be sent. This field is needed only if `send_to_all` is `False`|
+
++ Request (application/json)
+
+        {
+            "send_to_all": False //If True, we need to send to all users
+            "message": "Server Update: Sorry for the inconvenience. Please expect a downtime of 10 mins"
+            "notification_id": "2345",
+            "expiry": "2017-09-31T13:53:22Z",
+            "users": [
+                "pooja@abc.com",
+                "eshwar@abc.com",
+                "kaustubh@abc.com"
+            ]
+        }
+        
++ Response 200 (application/json)
